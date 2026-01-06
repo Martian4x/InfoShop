@@ -51,10 +51,6 @@ createInertiaApp({
             },
         });
 
-        // Debug: Log currency store values
-        console.log('🏪 Currency Store Initialized:', useCurrencyStore.getState().settings);
-        console.log('📦 Server Currency Settings:', currencySettingsFromServer);
-
         root.render(
             <PurchaseProvider>
                 <SharedProvider>

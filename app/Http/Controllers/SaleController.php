@@ -696,6 +696,7 @@ class SaleController extends Controller
                 'status',
                 'payment_status',
                 'created_at',
+                'created_by',
                 'note',
             ])
             ->paginate($perPage, ['*'], 'page', $page);

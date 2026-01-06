@@ -7,7 +7,7 @@ class PwaHelper
     /**
      * Get PWA configuration
      */
-    public static function config(string $key = null, $default = null)
+    public static function config(?string $key = null, $default = null)
     {
         if ($key) {
             return config("pwa.{$key}", $default);
