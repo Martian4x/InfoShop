@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register middleware aliases
         $middleware->alias([
             'check.installed' => \App\Http\Middleware\CheckInstalled::class,
+            'sync.api' => \App\Http\Middleware\ValidateSyncApiKey::class,
         ]);
 
         // Exclude API routes from CSRF (offline-first sync)

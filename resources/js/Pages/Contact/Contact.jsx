@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import Grid from '@mui/material/Grid';
@@ -7,6 +8,7 @@ import { Button, Box, TextField, IconButton, Alert, AlertTitle, Tooltip } from '
 import AddIcon from '@mui/icons-material/Add';
 import PrintIcon from "@mui/icons-material/Print";
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import DeleteIcon from '@mui/icons-material/Delete';
 import numeral from 'numeral';
 import { DataGrid } from '@mui/x-data-grid';
 import FormDialog from './Partial/FormDialog';
@@ -14,6 +16,7 @@ import CustomPagination from '@/Components/CustomPagination';
 import AddPaymentDialog from '@/Components/AddPaymentDialog';
 import PaymentsIcon from "@mui/icons-material/Payments";
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import Swal from 'sweetalert2';
 
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -22,7 +25,7 @@ import MobileContactsList from './Partial/MobileContactsList';
 // import { syncPosProducts, getLocalPosProducts } from '@/localdb/pos_products';
 import { SalesProvider } from "@/Context/SalesContext";
 
-const columns = (handleRowClick) => [
+const columns = (handleRowClick, handleDelete) => [
     { field: 'id', headerName: 'ID', width: 80 },
     {
         field: 'name', headerName: 'Name', width: 200,
@@ -58,7 +61,7 @@ const columns = (handleRowClick) => [
     {
         field: "action",
         headerName: "Actions",
-        width: 180,
+        width: 220,
         renderCell: (params) => {
             const basePath = params.row.type === 'vendor' ? '/purchases' : '/sales';
             const paymentsPath = params.row.type === 'vendor' ? '/purchases' : '/sales';
@@ -100,6 +103,15 @@ const columns = (handleRowClick) => [
                             </IconButton>
                         </Tooltip>
                     </Link>
+
+                    <Tooltip title="DELETE">
+                        <IconButton
+                            color="error"
+                            onClick={() => handleDelete(params.row.id, params.row.name)}
+                        >
+                            <DeleteIcon />
+                        </IconButton>
+                    </Tooltip>
                 </>
             )
         },
@@ -138,6 +150,47 @@ export default function Contact({ contacts, type, stores }) {
     const handleClose = () => {
         setSelectedContact(null);
         setOpen(false);
+    };
+
+    const handleDelete = async (contactId, contactName) => {
+        const result = await Swal.fire({
+            title: 'Delete Contact?',
+            text: `Are you sure you want to delete "${contactName}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await axios.delete(`/contact/${contactId}`);
+
+                if (response.data.status === 'success') {
+                    Swal.fire(
+                        'Deleted!',
+                        'Contact has been deleted successfully.',
+                        'success'
+                    );
+                    refreshContacts(window.location.pathname);
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        response.data.message || 'Failed to delete contact.',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                const errorMessage = error.response?.data?.message || 'An error occurred while deleting the contact.';
+                Swal.fire(
+                    'Error!',
+                    errorMessage,
+                    'error'
+                );
+            }
+        }
     };
 
     const refreshContacts = (url) => {
@@ -242,7 +295,7 @@ export default function Contact({ contacts, type, stores }) {
                     >
                         <DataGrid
                             rows={dataContacts.data}
-                            columns={columns(handleRowClick)}
+                            columns={columns(handleRowClick, handleDelete)}
                             getRowId={(row) => row.id}
                             slotProps={{
                                 toolbar: {
@@ -265,7 +318,7 @@ export default function Contact({ contacts, type, stores }) {
                 )}
 
                 {isMobile && (
-                    <MobileContactsList contacts={dataContacts.data} handleContactEdit={handleRowClick} />
+                    <MobileContactsList contacts={dataContacts.data} handleContactEdit={handleRowClick} handleDelete={handleDelete} />
                 )}
 
                 <Grid size={12} container justifyContent={"end"}>

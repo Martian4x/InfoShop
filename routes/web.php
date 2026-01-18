@@ -135,6 +135,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/vendors', [ContactController::class, 'index'])->defaults('type', 'vendor')->name('vendors.index');
     Route::post('/contact', [ContactController::class, 'store'])->name('contacts.store');
     Route::post('/contact/{id}', [ContactController::class, 'update'])->name('contacts.update');
+    Route::delete('/contact/{id}', [ContactController::class, 'destroy'])->name('contacts.destroy');
 
     Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
     Route::get('/sold-items', [SaleController::class, 'solditems'])->name('sales.items');

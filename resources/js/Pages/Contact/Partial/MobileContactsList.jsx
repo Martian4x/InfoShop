@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import { ClipboardClock, PrinterIcon, ReceiptText, ShoppingCart } from 'lucide-react';
+import { ClipboardClock, PrinterIcon, ReceiptText, ShoppingCart, Trash2 } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import Catalog from '@/Pages/CatalogPOS/Catalog';
 
-const MobileContactsList = ({ contacts, handleContactEdit }) => {
+const MobileContactsList = ({ contacts, handleContactEdit, handleDelete }) => {
     const [dialog, setDialog] = useState({ open: false, id: null });
 
     const openDialog = (type, id = null) => setDialog({ open: true, type, id });
@@ -49,6 +49,15 @@ const MobileContactsList = ({ contacts, handleContactEdit }) => {
                                         </Link>
                                     </>
                                 )}
+
+                                <Tooltip title="DELETE">
+                                    <IconButton
+                                        color="error"
+                                        onClick={() => handleDelete(contact.id, contact.name)}
+                                    >
+                                        <Trash2 size={20} />
+                                    </IconButton>
+                                </Tooltip>
                             </div>
                         </div>
 

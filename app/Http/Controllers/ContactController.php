@@ -100,4 +100,37 @@ class ContactController extends Controller
             'data' => $contact
         ], 200);
     }
+
+    public function destroy(Request $request, $id)
+    {
+        // Find the contact by ID or fail with a 404
+        $contact = Contact::findOrFail($id);
+
+        // Check if contact has any sales
+        $salesCount = \App\Models\Sale::where('contact_id', $id)->count();
+        if ($salesCount > 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Cannot delete this contact. There are {$salesCount} sales associated with this contact."
+            ], 422);
+        }
+
+        // Check if contact has any purchases
+        $purchasesCount = \App\Models\Purchase::where('contact_id', $id)->count();
+        if ($purchasesCount > 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Cannot delete this contact. There are {$purchasesCount} purchases associated with this contact."
+            ], 422);
+        }
+
+        // Delete the contact
+        $contact->delete();
+
+        // Return a success response
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Contact deleted successfully'
+        ], 200);
+    }
 }

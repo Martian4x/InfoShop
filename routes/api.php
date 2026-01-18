@@ -12,11 +12,16 @@ Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth
 
 // Unified Sync API endpoints for offline-first InfoPOS app
 // GET /api/sync?table=products - Fetch data
-// POST /api/sync?table=sales - Push data
+// POST /api/sync/sales - Push sales from mobile POS
 // GET /api/sync/health - Health check
-Route::get('/sync/health', [SyncController::class, 'healthCheck']);
-Route::get('/sync', [SyncController::class, 'fetch']);
-Route::post('/sync', [SyncController::class, 'push']);
+// GET /api/sync/verify - Verify sync URL configuration
+// Protected by X-API-Key header authentication
+Route::middleware('sync.api')->group(function () {
+    Route::get('/sync/health', [SyncController::class, 'healthCheck']);
+    Route::get('/sync/verify', [SyncController::class, 'verify']);
+    Route::get('/sync', [SyncController::class, 'fetch']);
+    Route::post('/sync/sales', [SyncController::class, 'pushSales']); // Push sales from mobile
+});
 
 // Firebase configuration endpoint for POS-Offline
 Route::get('/config/firebase', function () {
@@ -47,24 +52,27 @@ Route::get('/config/firebase', function () {
 });
 
 // Dedicated sync endpoints for POS Offline
-Route::get('/products/sync', function (Request $request) {
-    $request->merge(['table' => 'products']);
-    return app(SyncController::class)->fetch($request);
-});
+// Protected by X-API-Key header authentication
+Route::middleware('sync.api')->group(function () {
+    Route::get('/products/sync', function (Request $request) {
+        $request->merge(['table' => 'products']);
+        return app(SyncController::class)->fetch($request);
+    });
 
-Route::get('/charges/sync', function (Request $request) {
-    $request->merge(['table' => 'charges']);
-    return app(SyncController::class)->fetch($request);
-});
+    Route::get('/charges/sync', function (Request $request) {
+        $request->merge(['table' => 'charges']);
+        return app(SyncController::class)->fetch($request);
+    });
 
-Route::get('/collections/sync', function (Request $request) {
-    $request->merge(['table' => 'collections']);
-    return app(SyncController::class)->fetch($request);
-});
+    Route::get('/collections/sync', function (Request $request) {
+        $request->merge(['table' => 'collections']);
+        return app(SyncController::class)->fetch($request);
+    });
 
-Route::get('/contacts/sync', function (Request $request) {
-    $request->merge(['table' => 'contacts']);
-    return app(SyncController::class)->fetch($request);
+    Route::get('/contacts/sync', function (Request $request) {
+        $request->merge(['table' => 'contacts']);
+        return app(SyncController::class)->fetch($request);
+    });
 });
 
 // Test route to get current authenticated user
